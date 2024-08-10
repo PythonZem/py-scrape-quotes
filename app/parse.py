@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import csv
 
 from dataclasses import dataclass
@@ -14,7 +14,7 @@ class Quote:
     tags: list[str]
 
 
-def get_single_quotes(quote_soup) -> Quote:
+def get_single_quotes(quote_soup: Tag) -> Quote:
     return Quote(
         text=quote_soup.select_one(".text").text,
         author=quote_soup.select_one(".author").text,
@@ -27,21 +27,23 @@ def get_single_page_quotes(page_soup: BeautifulSoup) -> [Quote]:
     return [get_single_quotes(quotes_soup) for quotes_soup in quotes]
 
 
-def parse_quotes(url: str):
+def parse_quotes(url: str) -> [Quote]:
     page = requests.get(url).content
     soup = BeautifulSoup(page, "html.parser")
     all_quotes = get_single_page_quotes(soup)
 
     while True:
         if soup.select(".next"):
-            page = requests.get(url + soup.select_one("li.next a")["href"]).content
+            page = requests.get(
+                url + soup.select_one("li.next a")["href"]
+            ).content
             soup = BeautifulSoup(page, "html.parser")
             all_quotes.extend(get_single_page_quotes(soup))
         else:
             return all_quotes
 
 
-def create_csv(quotes: [Quote]):
+def create_csv(quotes: [Quote]) -> None:
     with open("result.csv", "w", newline="", encoding="utf-8") as csvfile:
         fieldnames = ["text", "author", "tags"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
