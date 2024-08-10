@@ -63,7 +63,4 @@ def main(output_csv_path: str) -> None:
 
 if __name__ == "__main__":
     create_csv(parse_quotes(BASE_URL))
-    # test = parse_quotes(BASE_URL)
-    # print(test)
-    # print(len(test))
     main("result.csv")
